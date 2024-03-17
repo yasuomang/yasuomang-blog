@@ -1,3 +1,5 @@
+'use client'
+
 import {
   Mail,
   Github,
@@ -8,6 +10,7 @@ import {
   Mastodon,
   Threads,
   Instagram,
+  Wechat,
 } from './icons'
 
 const components = {
@@ -20,23 +23,36 @@ const components = {
   mastodon: Mastodon,
   threads: Threads,
   instagram: Instagram,
+  wechat: Wechat,
 }
 
 type SocialIconProps = {
   kind: keyof typeof components
-  href: string | undefined
+  href?: string | undefined
+  noLink?: boolean
   size?: number
+  onClick?: () => void
 }
 
-const SocialIcon = ({ kind, href, size = 8 }: SocialIconProps) => {
-  if (!href || (kind === 'mail' && !/^mailto:\w+([.-]?\w+)@\w+([.-]?\w+)(.\w{2,3})+$/.test(href)))
+const SocialIcon = ({ kind, href, size = 8, noLink, onClick }: SocialIconProps) => {
+  if (
+    (!href || (kind === 'mail' && !/^mailto:\w+([.-]?\w+)@\w+([.-]?\w+)(.\w{2,3})+$/.test(href))) &&
+    !noLink
+  )
     return null
 
   const SocialSvg = components[kind]
 
+  const handleClick = () => {
+    if (onClick) {
+      onClick()
+    }
+  }
+
   return (
     <a
-      className="text-sm text-gray-500 transition hover:text-gray-600"
+      onClick={handleClick}
+      className="cursor-pointer text-sm text-gray-500 transition hover:text-gray-600"
       target="_blank"
       rel="noopener noreferrer"
       href={href}

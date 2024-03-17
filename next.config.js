@@ -72,15 +72,16 @@ module.exports = () => {
           hostname: 'picsum.photos',
         },
       ],
+      unoptimized: true,
     },
-    async headers() {
-      return [
-        {
-          source: '/(.*)',
-          headers: securityHeaders,
-        },
-      ]
-    },
+    // async headers() {
+    //   return [
+    //     {
+    //       source: '/(.*)',
+    //       headers: securityHeaders,
+    //     },
+    //   ]
+    // },
     webpack: (config, options) => {
       config.module.rules.push({
         test: /\.svg$/,
@@ -89,5 +90,6 @@ module.exports = () => {
 
       return config
     },
+    output: 'export',
   })
 }

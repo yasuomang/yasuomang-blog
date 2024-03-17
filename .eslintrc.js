@@ -8,7 +8,7 @@ module.exports = {
     es6: true,
   },
   plugins: ['@typescript-eslint'],
-  extends: [
+  extends: [  
     'eslint:recommended',
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',

@@ -1,8 +1,16 @@
+'use client'
+
 import Link from './Link'
 import siteMetadata from '@/data/siteMetadata'
 import SocialIcon from '@/components/social-icons'
+import PopUp from '@/components/Popup'
+import Image from '@/components/Image'
+import { useState } from 'react'
 
 export default function Footer() {
+  const [openPopup, setOpenPopup] = useState(false)
+
+  const HandleRemovePopUp = () => setOpenPopup(false)
   return (
     <footer>
       <div className="mt-16 flex flex-col items-center">
@@ -15,6 +23,20 @@ export default function Footer() {
           <SocialIcon kind="twitter" href={siteMetadata.twitter} size={6} />
           <SocialIcon kind="instagram" href={siteMetadata.instagram} size={6} />
           <SocialIcon kind="threads" href={siteMetadata.threads} size={6} />
+          {siteMetadata.wechat && (
+            <SocialIcon kind="wechat" noLink={true} onClick={() => setOpenPopup(true)} />
+          )}
+          {siteMetadata.wechat && (
+            <PopUp openPopUp={openPopup} closePopUp={HandleRemovePopUp}>
+              <Image
+                src={siteMetadata.wechat}
+                alt="wechat"
+                width={400}
+                height={400}
+                className="m-auto"
+              />
+            </PopUp>
+          )}
         </div>
         <div className="mb-2 flex space-x-2 text-sm text-gray-500 dark:text-gray-400">
           <div>{siteMetadata.author}</div>
@@ -24,9 +46,9 @@ export default function Footer() {
           <Link href="/">{siteMetadata.title}</Link>
         </div>
         <div className="mb-8 text-sm text-gray-500 dark:text-gray-400">
-          <Link href="https://github.com/timlrx/tailwind-nextjs-starter-blog">
-            Tailwind Nextjs Theme
-          </Link>
+          {/* <Link href="https://github.com/timlrx/tailwind-nextjs-starter-blog"> */}
+          {/* Tailwind Nextjs Theme */}
+          {/* </Link> */}
         </div>
       </div>
     </footer>
