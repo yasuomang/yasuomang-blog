@@ -1,0 +1,29 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main # 触发条件，当推送到主分支时触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Install Dependencies
+        run: yarn # 安装项目依赖
+
+      - name: Build
+        run: yarn build # 构建 Next.js 应用
+
+      - name: Deploy
+        uses: appleboy/scp-action@master
+        with:
+          host: xushu.fun # 服务器地址
+          username: root # SSH 用户名
+          key: ${{ secrets.SSH_PRIVATE_KEY }} # SSH 私钥
+          source: 'out' # 要传输的文件夹
+          target: '/home/yasuomang-blog/' # 目标路径
