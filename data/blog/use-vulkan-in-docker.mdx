@@ -8,4 +8,63 @@ summary: 本文介绍如何在Docker中使用Vulkan，以及一些需要注意�
 
 ## 1. 为什么要在Docker中使用Vulkan
 
-有些应用程序需要Vulkan来进行图形渲染，但是在一些环境中，Vulkan的安装和配置可能会比较麻烦，比如在CI/CD环境中，或者在一些不支持Vulkan的操作系统中。这时候，我们可以使用Docker来解决这个问题。
+在一些环境中，Vulkan的安装和配置可能会比较麻烦，在Docker中具备使用Vulkan的能力的话，可以很方便的在不同的环境中使用Vulkan，并且能够比较快速的复制迁移应用。
+
+## 2. 支持Docker调用NVIDIA GPU
+
+### Docker-nvidia 是 Docker 的一个插件，它允许 Docker 容器与 NVIDIA GPU 进行交互
+
+接下来安装Docker-nvidia
+
+先添加 NVIDIA 容器工具包的存储库
+
+```bash
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
+      && curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+      && curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.list | \
+            sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+            sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+```
+
+```bash
+sudo apt-get update
+sudo apt-get install -y nvidia-docker2
+```
+
+安装完成之后重启一下电脑，不然Docker-nvidia可能不会生效
+
+## 3. vulkan Docker 示例
+
+用dockerfile创建一个vulkan的docker镜像
+
+```dockerfile
+FROM ubuntu:20.04
+# 设置驱动支持，docker中可以使用GPU了。
+ENV NVIDIA_DRIVER_CAPABILITIES=all
+ENV NVIDIA_VISIBLE_DEVICES=all
+RUN apt-get -y install \
+    vulkan-tools \
+    mesa-utils
+```
+
+下面是docker-compose 的配置
+
+```yaml
+services:
+  vulkan_in_docker:
+    build: .
+    runtime: nvidia
+    command: sh -c "nvidia-smi && vulkaninfo --summary && vkcube"
+    volumes:
+      # https://github.com/mitsuba-renderer/mitsuba3/issues/1019 docker use optix
+      - /usr/share/nvidia:/usr/share/nvidia
+```
+
+之后运行`docker-compose up --build`可以看到一些输出信息：
+
+- `nvidia-smi`：显示了NVIDIA GPU的信息
+  ![output-nvidia](/static/images/vulkan-in-docker/output-nvidia.png)
+- `vulkaninfo`：显示了NVIDIA GPU的信息
+  ![output-vulkaninfo](/static/images/vulkan-in-docker/output-vulkaninfo.png)
+
+之后就可在docker中使用vulkan了，代码我放在[github](https://github.com/yasuomang/use-vulkan-in-docker)上了，需要的话可以自取
