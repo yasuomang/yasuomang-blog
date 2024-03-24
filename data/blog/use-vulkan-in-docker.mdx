@@ -54,10 +54,7 @@ services:
   vulkan_in_docker:
     build: .
     runtime: nvidia
-    command: sh -c "nvidia-smi && vulkaninfo --summary && vkcube"
-    volumes:
-      # https://github.com/mitsuba-renderer/mitsuba3/issues/1019 docker use optix
-      - /usr/share/nvidia:/usr/share/nvidia
+    command: sh -c "nvidia-smi && vulkaninfo"
 ```
 
 之后运行`docker-compose up --build`可以看到一些输出信息：
