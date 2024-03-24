@@ -1,0 +1,46 @@
+---
+title: AWS Lambda实现图片裁剪
+date: '2024-3-24'
+tags: ['aws', 'nodejs']
+draft: false
+summary: 介绍如何使用AWS Lambda实现图片裁剪功能
+---
+
+## 1. 介绍
+
+由于AWS不提供图像处理服务，所以一些从国内服务迁移过来的服务可能会遇到图像处理的问题。
+
+下面介绍一下一些概念：
+
+- `AWS CouldFront`：AWS 提供的CDN服务。
+- `AWS Lambda`：是一种无服务器计算服务，可以运行代码而无需管理服务器。
+- `AWS Lambda@Edge`： AWS Lambda的一个特殊变体，允许CloudFront的边缘位置上运行Lambda函数，从而提高性能、降低延迟，并在请求过程中对内容进行动态处理。
+- `AWS API Gateway`： 可用于构建安全、可扩展的API，可以直接与后端服务（如AWS Lambda、Amazon EC2、Amazon S3等）集成，并提供丰富的功能来管理API的请求、响应、授权和访问控制。
+
+## 2. API Gateway + Lambda 实现图片裁剪
+
+下面是这个方案的流程图：
+![APIGateway-lambda](/static/images/image-resize/APIGateway-lambda.png)
+
+- 用户请求图片URL，CloudFront上设置behavior，通过匹配路径把请求分发到API Gateway。
+- API Gateway调用Lambda处理请求，Lambda函数获取S3的图片资源，解析URL，拿到100x100_cover裁剪图片的参数，对图片经理处理之后返回数据。
+
+不过这个方案有很大的缺点：
+
+- 每次用户请求图片都会调用Lambda函数，费用会比较高，速度也会比较慢。
+
+下面我们优化一下这个方案。
+
+## 3. Lambda@Edge 实现图片裁剪
+
+由于 Lambda@Edge 只能在 CloudFront中使用，先来看一下当某个用户请求CloudFront时的流程图：
+
+![cloudfront-cache](/static/images/image-resize/cloudfront-cache.png)
+
+- Viewer Request： 当 CloudFront 检查请求的对象是否位于边缘缓存中之前，该函数会执行。
+- Origin Request： 当 CloudFront 将请求转发到Origin(一般为S3，API Gateway)时，该函数才会执行。但是如果请求的对象位于边缘缓存中时，该函数不会执行。
+- Origin Response： 该函数在 CloudFront 收到来自Origin的响应之后、在响应中缓存对象之前执行。
+- Viewer Response： 无论对象是否已在边缘缓存中，该函数都会在将请求的对象返回给用户之前执行。
+
+我们可以把Lambda@Edge部署在四个触发器上，这里我们把图片裁剪的逻辑放在Origin Response上，可以利用CloudFront的缓存。
+![APIGateway-lambda](/static/images/image-resize/APIGateway-lambda.png)
