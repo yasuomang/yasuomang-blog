@@ -6,7 +6,7 @@ const siteMetadata = {
   description: '前端博客，独立开发者博客，技术博客',
   language: 'zh-CN',
   theme: 'system', // system, dark or light
-  siteUrl: 'http://xushu.fun',
+  siteUrl: 'https://xushu.fun',
   siteRepo: 'https://github.com/yasuomang/yasuomang-blog',
   siteLogo: '/static/images/logo.png',
   socialBanner: '/static/images/logo.png',
